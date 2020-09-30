@@ -7,7 +7,7 @@ namespace MM{
   char MM_pool[MM_POOL_SIZE];
 
   // Initialize any data needed to manage the memory pool
-  void init(void);
+  void init();
 
   // return a pointer inside the memory pool
   // If no chunk can accommodate aSize call OnAllocFail()
