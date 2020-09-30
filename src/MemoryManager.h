@@ -4,6 +4,7 @@
 namespace MM{
   // allocating 100MB Memory Pool.
   const int MM_POOL_SIZE = 1024*1000*100;
+  char MM_pool[MM_POOL_SIZE];
 
   // Initialize any data needed to manage the memory pool
   void init(void);
