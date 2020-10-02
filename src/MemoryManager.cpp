@@ -4,9 +4,14 @@
 
 namespace MM{
 
+  // allocating 100MB Memory Pool.
+  const int MM_POOL_SIZE = 1024*1000*100;
+  char MM_pool[MM_POOL_SIZE];
+
   void init(){
     for(size_t i=0; i<MM_POOL_SIZE; i++)
       MM_pool[i]=0x0;
+      // std::cout<<"Allocation done"<<std::endl;
   }
 
   void* allocate(int aSize){
@@ -60,20 +65,18 @@ namespace MM{
     i[0] = firstHeader;
     i[1] = secondHeader;
     return i+2;
-
-    //return ((void*) 0);
   }
 
     void deallocate(void* aPointer){
       char *p = (char *)aPointer;
       if (p == 0x0){
-        onIllegalOperation("Error on trying to deallocate a free memory/null pointer");
+        errorLog("Error on trying to deallocate a free memory/null pointer");
       }
       char *firstHeader = p - 2;
       char *secondHeader = p - 1;
       *firstHeader = 0x3F & *firstHeader;   //remove 11 which is a signature
       int size=0;
-      getSizeInt( firstHeader, secondHeader, &size );
+      MM::getSizeInt( firstHeader, secondHeader, &size );
       char *temp;
       for( int i=0; i< (size+2); i=i+1 ){
         temp = &MM_pool[i];
@@ -90,27 +93,46 @@ namespace MM{
     std::memcpy((void*)size, (void*)tempSize, 4);
   }
 
-  void onOutOfMemory(void){
-    std::cerr << "Memory pool out of memory" << std::endl;
-    exit( 1 );
+  int freeRemaining(){
+    char *p = MM_pool;
+    int count = 0;
+    int iter_count = 0;
+    char header_one = 0;
+    char header_two = 0;
+
+    while(iter_count < MM_POOL_SIZE){
+      if(*p == (char)0x0){
+        count++;
+        p++;
+        iter_count++;
+        continue;
+      }
+      header_one = p[0];
+      header_two = p[1];
+      header_one = 0x3F & header_one;   //remove 11 which is a signature
+      int size = 0;
+      getSizeInt(&header_one, &header_two, &size);
+      p = p+size+2;
+      iter_count = iter_count + size+2;
+    }
+
+    return count;
+  }
+
+  void onOutOfMemory(){
+    std::cerr << "Pool out of memory" << std::endl;
+    exit(1);
   }
 
   // call for any other error condition, providing meaningful error messages are appreciated
-  void onIllegalOperation(const char* fmt,...){
-    if ( fmt == NULL ){
-      std::cerr << "Unknown illegal operation" << std::endl;
-      exit( 1 );
+  void errorLog(const char* e){
+    if ( e == NULL ){
+      std::cerr << "Unknown Error" << std::endl;
+      exit(1);
     }
     else{
-      char	buf[8192];
-
-      va_list argptr;
-      va_start (argptr,fmt);
-      vsprintf (buf,fmt,argptr);
-      va_end (argptr);
-
-      std::cerr << "Illegal operation: \"" << buf << "\"" << std::endl;
-      exit( 1 );
+      std::cerr<<e<<std::endl;
+      exit(1);
     }
   }
 
