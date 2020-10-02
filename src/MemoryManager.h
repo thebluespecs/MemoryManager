@@ -32,3 +32,11 @@ namespace MM{
   void errorLog(const char* e);
 
 };
+
+void* operator new(size_t aSize) {    
+  return MM::allocate(aSize); 
+} 
+  
+void operator delete(void* aPointer){ 
+  MM::deallocate(aPointer); 
+}
