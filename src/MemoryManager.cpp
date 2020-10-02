@@ -1,6 +1,7 @@
 #include <cstring>
 #include <iostream>
-#include <chrono>
+// #include <chrono>
+// #include <unordered_map>
 
 #include "MemoryManager.h"
 
@@ -141,10 +142,10 @@ namespace MM{
 
 };
 
-void* operator new(size_t aSize) {    
-  return MM::allocate(aSize); 
-} 
+// void* operator new(size_t aSize) {    
+//   return MM::allocate(aSize); 
+// } 
   
-void operator delete(void* aPointer){ 
-  MM::deallocate(aPointer); 
-}
+// void operator delete(void* aPointer){ 
+//   MM::deallocate(aPointer); 
+// }
