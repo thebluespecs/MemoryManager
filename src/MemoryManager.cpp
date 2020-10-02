@@ -1,12 +1,15 @@
 #include <cstring>
 #include <iostream>
+#include <chrono>
+
 #include "MemoryManager.h"
 
 namespace MM{
 
   // allocating 100MB Memory Pool.
-  const int MM_POOL_SIZE = 1024*1000*100;
+  const int MM_POOL_SIZE = 10;
   char MM_pool[MM_POOL_SIZE];
+
 
   void init(){
     for(size_t i=0; i<MM_POOL_SIZE; i++)
