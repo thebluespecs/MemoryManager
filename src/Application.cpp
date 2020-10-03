@@ -6,12 +6,11 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-// #include <iostream>
 #include <vector>
 
 #include "MemoryManager.h"
 
-extern char MM_pool;
+extern char MM_pool[];
 #define TIME_MULTIPLIER 1000000
 
 const GLchar* vertexSource = R"glsl(
@@ -45,43 +44,82 @@ void* task1(void *unused){
 
     usleep(1*TIME_MULTIPLIER);
     std::cout << "Task1: Free memory = " << MM::freeRemaining() << std::endl;
-    int* a = (int*)MM::allocate(sizeof(int)*100);
-    for(int i=0;i<100;i++) *(a+i) = 1;
-    char *firstHeader = (char*)a - 2;
-    char *secondHeader = (char*)a - 1;
-    *firstHeader = 0x3F & *firstHeader;   //remove 11 which is a signature
-    int size=0;
-    MM::getSizeInt( firstHeader, secondHeader, &size );
-    // MM::getSizeInt((0x3F & (char*)(a-2)), (char*)(a-1), &size);
-    std::cout<<size<<std::endl;
-    // *int_pointer = 10000;
-    // std::cout << "Task1: value of the int = " << *int_pointer << std::endl;
+    int* a = (int*)MM::allocate(sizeof(int)*200);
+    
+    // Iterator is also allocated in the MM_pool
+    int* ip = (int*)MM::allocate(sizeof(int)); 
+    for(*ip = 0; *ip <200;*ip=(*ip)+1) *(a+(*ip)) = 1; //Array initialised 
+
+    int* int_pointer = (int*)MM::allocate(std::rand()%10);
+    *int_pointer = 10000;
     std::cout << "Task1: Free memory = " << MM::freeRemaining() << std::endl;
+    usleep(1*TIME_MULTIPLIER);
+
     MM::deallocate(a);
+    usleep(1*TIME_MULTIPLIER);
+
     std::cout << "Task1: Free memory = " << MM::freeRemaining() << std::endl;
 }
 
 void* task2(void *unused){
-    usleep(1*TIME_MULTIPLIER);
+    usleep(6*TIME_MULTIPLIER);
     std::cout << "Task2: Free memory = " << MM::freeRemaining() << std::endl;
     int* int_pointer = (int*)MM::allocate(sizeof(int));
     *int_pointer = 10000;
-    std::cout << "Task2: value of the int = " << *int_pointer << std::endl;
+    // std::cout << "Task2: value of the int = " << *int_pointer << std::endl;
     std::cout << "Task2: Free memory = " << MM::freeRemaining() << std::endl;
+    usleep(1*TIME_MULTIPLIER);
     MM::deallocate(int_pointer);
 
+    int* ip = (int*)MM::allocate(sizeof(int));
+    *ip = 0;
+
+    while(*ip < 6){
+        int* bleh = (int*)MM::allocate(std::rand()%50);
+        *bleh = 10000;
+        *ip = *ip + 1;
+        usleep(1*TIME_MULTIPLIER);
+
+    }
+
     std::cout << "Task2: Free memory = " << MM::freeRemaining() << std::endl;
+}
+
+void* task3(void *unused){    
+
+    usleep(15*TIME_MULTIPLIER);
+    int* ip = (int*)MM::allocate(sizeof(int));
+    *ip = 0;
+
+    while(*ip < 6){
+        int* bleh = (int*)MM::allocate(std::rand()%50);
+        *bleh = 10000;
+        *ip = *ip + 1;
+        usleep(1*TIME_MULTIPLIER);
+    }
+}
+
+
+void* task4(void *unused){    
+
+    usleep(25*TIME_MULTIPLIER);
+
+    while(true){
+        int* bleh = (int*)MM::allocate(std::rand()%50);
+        *bleh = 10000;
+        usleep(1*TIME_MULTIPLIER);
+    }
 }
 
 int main(int argc, char const *argv[])
 {
     MM::init();
-    pthread_t thread1, thread2;
+    pthread_t thread1, thread2, thread3, thread4;
 
     int i1 = pthread_create(&thread1, NULL, task1, NULL);
-    // int i1 = pthread_create(&thread1, NULL, task1, NULL);
     int i2 = pthread_create(&thread2, NULL, task2, NULL);
-
+    int i3 = pthread_create(&thread3, NULL, task3, NULL);
+    int i4 = pthread_create(&thread3, NULL, task4, NULL);
 
     GLFWwindow* window;
 
@@ -118,7 +156,7 @@ int main(int argc, char const *argv[])
     glewExperimental = GL_TRUE;
     glewInit();
 
-        // Create Vertex Array Object
+    // Create Vertex Array Object
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -128,11 +166,10 @@ int main(int argc, char const *argv[])
     glGenBuffers(1, &vbo);
 
     GLfloat vertices[] = {
-        -1.0f,  1.0f,  // Top-left
-         -0.002f,  1.0f,  // Top-right
-         -0.002f, -1.0f,  // Bottom-right
-        -1.0f, -1.0f  // Bottom-left
-
+        -1.0f,       1.0f,  // Top-left
+        -0.998f,     1.0f,  // Top-right
+        -0.998f,    -1.0f,  // Bottom-right
+        -1.0f,      -1.0f  // Bottom-left
     };
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -178,14 +215,8 @@ int main(int argc, char const *argv[])
     // glEnableVertexAttribArray(colAttrib);
     // glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
 
-    glm::mat4 proj = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
+    glm::mat4 proj = glm::ortho(-1.0f, 0.0f, -1.0f, 1.0f, -1.0f, 1.0f);
     glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-0.0f, 0.0f, 0.0f));
-
-    std::vector<int> v;
-    for(int i=0;i<1000;i++){
-        v.push_back(std::rand()%100);
-    }
-    
 
     // bool running = true;
     while (!glfwWindowShouldClose(window))
@@ -193,20 +224,43 @@ int main(int argc, char const *argv[])
         // Clear the screen to black
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        int i=0;
+        
         // Draw a rectangle from the 2 triangles using 6 indices
-        for(i=0;i<1000;i++)
-        {   
+        int blues=0;
+        int reds=0;
+        for(int i=0;i<1000;i++)
+        {  
+            float r=0,g=0,b=0;
+            if(reds && blues){
+                b=1.0f;
+                blues=0;
+            } 
+            else if(reds && !blues){
+                r=1.0f;
+                reds--;
+            }
+            else{
+                char header_one = 0;
+                char header_two = 0;
+                if(MM_pool[i] == (char)0x0){g = 1.0f; r=0.55f; b=0.4f;}
+                else{
+                    header_one = MM_pool[i];
+                    header_two = MM_pool[i+1];
+                    header_one = 0x3F & header_one;
+                    int size = 0;
+                    MM::getSizeInt(&header_one, &header_two, &size);
+                    b=1.0f;
+                    reds=size;
+                    blues=1;
+                }
+            }
+            // char *p = MM_pool;
             // std::cout<<i<<std::endl;
             glm::vec3 translationA(float(i)/float(1000), 0, 0);
             glm::mat4 model  = glm::translate(glm::mat4(1.0f), translationA);
             glm::mat4 mvp = proj * view * model;
 
             glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "u_MVP"), 1, GL_FALSE, &mvp[0][0]);
-            float r=0,g=0,b=0;
-            if(v[i]<50) g=1.0f;
-            else if(v[i]>=50 && v[i]<=75) r=1.0f;
-            else b=1.0f;
             glUniform4f(glGetUniformLocation(shaderProgram, "u_color"), r ,g, b, 1.0f);
             
 
@@ -234,6 +288,8 @@ int main(int argc, char const *argv[])
     // window.close();
     glfwTerminate();
 
+    pthread_join(thread4, NULL);
+    pthread_join(thread3, NULL);
     pthread_join(thread2, NULL);
     pthread_join(thread1, NULL);
 

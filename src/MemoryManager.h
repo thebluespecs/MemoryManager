@@ -1,4 +1,3 @@
-// Header guard
 #pragma once
 
 namespace MM{
@@ -17,12 +16,6 @@ namespace MM{
 
   // Will scan the memory pool and return the total free space remaining
   int freeRemaining();
-
-  // Will scan the memory pool and return the largest free space remaining
-  int largestFree();
-
-  // will scan the memory pool and return the smallest free space remaining
-  int smallestFree();
 
   // Call if no space is left for the allocation request
   void onOutOfMemory();

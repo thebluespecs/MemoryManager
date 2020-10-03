@@ -5,12 +5,11 @@
 
 #include "MemoryManager.h"
 
-namespace MM{
-
   // allocating 100MB Memory Pool.
-  const int MM_POOL_SIZE = 1000;
-  char MM_pool[MM_POOL_SIZE];
+const int MM_POOL_SIZE = 1000;
+char MM_pool[MM_POOL_SIZE];
 
+namespace MM{
 
   void init(){
     for(size_t i=0; i<MM_POOL_SIZE; i++)
@@ -124,8 +123,7 @@ namespace MM{
   }
 
   void onOutOfMemory(){
-    std::cerr << "Pool out of memory" << std::endl;
-    exit(1);
+    std::cerr << "Error Message : Pool out of memory. Deallocate some resources."<<std::endl;;
   }
 
   // call for any other error condition, providing meaningful error messages are appreciated
