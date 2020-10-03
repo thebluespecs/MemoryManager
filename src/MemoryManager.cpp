@@ -12,6 +12,7 @@ char MM_pool[MM_POOL_SIZE];
 namespace MM{
 
   void init(){
+    std::cout<<"*****************************Memory Manager initialised.*****************************"<<std::endl;
     for(size_t i=0; i<MM_POOL_SIZE; i++)
       MM_pool[i]=0x0;
       // std::cout<<"Allocation done"<<std::endl;
@@ -40,7 +41,7 @@ namespace MM{
         if(*(i+(aSize-1 + 2)) == 0x0){ //empty block size is enough to store
           break;
         }
-        else{  //not enough free block, search for another
+        else{  //not enough free sapce, search for another memory block
           i++;
           iter_count++;
           continue;
@@ -67,6 +68,7 @@ namespace MM{
 
     i[0] = firstHeader;
     i[1] = secondHeader;
+    // returns header + 2 where the data is stored.
     return i+2;
   }
 
@@ -75,18 +77,20 @@ namespace MM{
       if (p == 0x0){
         errorLog("Error on trying to deallocate a free memory/null pointer");
       }
+      // make the header 0x0
       char *firstHeader = p - 2;
       char *secondHeader = p - 1;
       *firstHeader = 0x3F & *firstHeader;   //remove 11 which is a signature
       int size=0;
       MM::getSizeInt( firstHeader, secondHeader, &size );
       char *temp;
+      // make the memory block 0x0
       for( int i=0; i< (size+2); i=i+1 ){
         temp = &MM_pool[i];
         *temp = 0x0;
       }
   }
-
+  //helper function, returns the size of the memory block stored in the 14 bits of the header.
   void getSizeInt(char* firstHeader, char* secondHeader, int *size ){
     char tempSize[4];
     tempSize[3] = 0x0;
@@ -126,7 +130,7 @@ namespace MM{
     std::cerr << "Error Message : Pool out of memory. Deallocate some resources."<<std::endl;;
   }
 
-  // call for any other error condition, providing meaningful error messages are appreciated
+  // call for any other error condition
   void errorLog(const char* e){
     if ( e == NULL ){
       std::cerr << "Unknown Error" << std::endl;
