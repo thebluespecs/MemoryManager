@@ -38,10 +38,12 @@ This is a thread safe program which takes calls from multiple thread at the same
 
 ## Execution Information
 
-**COMPILE** :
-`g++ src/MemoryManager.cpp src/Application.cpp -w -lGL -lglfw -lGLEW -lGLU -std=c++0x -lpthread -o ./bin/MemoryManager.out`
-
 Make sure to have all the libraries which are statically getting linked.
 
+**BUIDLING**
+`mkdir build && cd build`
+`cmake ..`
+`make`
+
 **RUN** :
-`/bin/MemoryManager.out`
+`./demo`
