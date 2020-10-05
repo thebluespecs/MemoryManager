@@ -1,5 +1,22 @@
 #include <iostream>
+#ifdef _WIN32
+#include <windows.h>
+static void usleep(__int64 usec)
+{
+    HANDLE timer;
+    LARGE_INTEGER ft;
+
+    ft.QuadPart = -(10 * usec); // Convert to 100 nanosecond interval, negative value indicates relative time
+
+    timer = CreateWaitableTimer(NULL, TRUE, NULL);
+    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+    WaitForSingleObject(timer, INFINITE);
+    CloseHandle(timer);
+}
+#define HAVE_STRUCT_TIMESPEC
+#else
 #include <unistd.h>
+#endif
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -15,7 +32,6 @@ extern char MM_pool[];
 
 // needed for standby for a thread.
 #define TIME_MULTIPLIER 1000000
-
 
 // ***************** SHADERS *****************************
 
@@ -48,7 +64,7 @@ const GLchar* fragmentSource = R"glsl(
     }
 )glsl";
 
-// ********************** THREADS ************************ 
+// ********************** THREADS ************************
 void task1(){    
     std::cout<<"Task one Allocating."<<std::endl;
     usleep(1*TIME_MULTIPLIER);
