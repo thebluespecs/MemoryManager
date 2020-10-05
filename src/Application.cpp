@@ -1,19 +1,12 @@
 #include <iostream>
+
 #ifdef _WIN32
-#include <windows.h>
-static void usleep(__int64 usec)
-{
-    HANDLE timer;
-    LARGE_INTEGER ft;
+#include <chrono>
+#include <thread>
 
-    ft.QuadPart = -(10 * usec); // Convert to 100 nanosecond interval, negative value indicates relative time
-
-    timer = CreateWaitableTimer(NULL, TRUE, NULL);
-    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
-    WaitForSingleObject(timer, INFINITE);
-    CloseHandle(timer);
+static void usleep(int usec){
+    std::this_thread::sleep_for(std::chrono::microseconds(usec));
 }
-#define HAVE_STRUCT_TIMESPEC
 #else
 #include <unistd.h>
 #endif
