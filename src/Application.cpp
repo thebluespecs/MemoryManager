@@ -1,11 +1,12 @@
 #include <iostream>
 #include <unistd.h>
-#include <pthread.h>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include <boost/thread.hpp>
 
 #include "MemoryManager.h"
 
@@ -48,7 +49,7 @@ const GLchar* fragmentSource = R"glsl(
 )glsl";
 
 // ********************** THREADS ************************ 
-void* task1(void *unused){    
+void task1(){    
     std::cout<<"Task one Allocating."<<std::endl;
     usleep(1*TIME_MULTIPLIER);
     std::cout << "Task1: Free memory = " << MM::freeRemaining() << std::endl;
@@ -71,7 +72,7 @@ void* task1(void *unused){
 
 }
 
-void* task2(void *unused){
+void task2(){
     usleep(6*TIME_MULTIPLIER);
     std::cout<<"Task two Allocating."<<std::endl;
 
@@ -95,7 +96,7 @@ void* task2(void *unused){
     std::cout << "Task2: Free memory = " << MM::freeRemaining() << std::endl;
 }
 
-void* task3(void *unused){    
+void task3(){    
 
     usleep(15*TIME_MULTIPLIER);
     std::cout<<"Task three Allocating."<<std::endl;
@@ -114,7 +115,7 @@ void* task3(void *unused){
 }
 
 
-void* task4(void *unused){    
+void task4(){    
 
     usleep(25*TIME_MULTIPLIER);
     std::cout<<"Task four Allocating."<<std::endl;
@@ -131,14 +132,11 @@ int main(int argc, char const *argv[])
     // initialise the manager
     MM::init();
 
-    // Pthreads have been used for multithreaded
-    pthread_t thread1, thread2, thread3, thread4;
-
-    // create N number of threads as workers on the memory manager
-    int i1 = pthread_create(&thread1, NULL, task1, NULL);
-    int i2 = pthread_create(&thread2, NULL, task2, NULL);
-    int i3 = pthread_create(&thread3, NULL, task3, NULL);
-    int i4 = pthread_create(&thread3, NULL, task4, NULL);
+    // Boost threads
+    boost::thread thread1(task1);
+    boost::thread thread2(task2);
+    boost::thread thread3(task3);
+    boost::thread thread4(task4);
 
     // Used GLFW as the windowing library, SDL is also an option
     GLFWwindow* window;
@@ -308,12 +306,10 @@ int main(int argc, char const *argv[])
     // window.close();
     glfwTerminate();
 
-    // incase, every thread finished its task.
-    // not possible here.
-    pthread_join(thread4, NULL);
-    pthread_join(thread3, NULL);
-    pthread_join(thread2, NULL);
-    pthread_join(thread1, NULL);
+    thread1.join();
+    thread2.join();
+    thread3.join();
+    thread4.join();
 
     return 0;
 }
