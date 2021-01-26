@@ -1,6 +1,6 @@
 # MemoryManager
 Memory manger with a visualisation.
-<img align="left" src="./assets/MM.gif" width="640" height="360" />
+<img align="left" src="./assets/MM.gif" width="640" height="360" />  
 
 ## Implementation
 
