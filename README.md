@@ -1,7 +1,8 @@
 # MemoryManager
 Memory manger with a visualisation.
+<p>
 <img align="left" src="./assets/MM.gif" width="640" height="360" />  
-
+</p>
 ## Implementation
 
 ### Algorithm
